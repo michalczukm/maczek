@@ -181,20 +181,6 @@
             border-top: 3px dashed #bbb;
         }
         
-        .qr-placeholder {
-            width: 80px;
-            height: 80px;
-            background: #f1f2f6;
-            border: 2px dashed #57606f;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8em;
-            color: #57606f;
-            border-radius: 5px;
-        }
-        
         .legend {
             display: flex;
             justify-content: center;
@@ -229,6 +215,23 @@
             background: #00a085;
         }
 
+        /* iOS-specific styles for print button */
+        @supports (-webkit-touch-callout: none) {
+            .print-button {
+                background: linear-gradient(135deg, #007aff, #0056cc);
+                position: relative;
+            }
+
+            .print-button::after {
+                content: "📱";
+                position: absolute;
+                right: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 0.8em;
+            }
+        }
+
         @media print {
             body {
                 background: white;
@@ -254,6 +257,10 @@
                 color: black;
             }
 
+            .footer {
+                padding: 0px;
+            }
+
             .calendar {
                 padding: 0px;
             }
@@ -272,7 +279,7 @@
             </div>
         </div>
 
-        <button class="print-button" onclick="window.print()">🖨️ Wydrukuj Kalendarz</button>
+        <button class="print-button" onclick="handlePrint()">🖨️ Wydrukuj Kalendarz</button>
 
         <div class="calendar">
             <div class="legend">
@@ -383,6 +390,23 @@
             const months = ['Sty', 'Lut', 'Mar', 'Kwi', 'Maj', 'Cze',
                            'Lip', 'Sie', 'Wrz', 'Paź', 'Lis', 'Gru'];
             return months[monthIndex];
+        }
+
+        // Function to detect iOS devices
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+
+        // Function to handle printing with iOS support
+        function handlePrint() {
+            if (isIOS()) {
+                // On iOS, show instructions for printing
+                alert('📱 Aby wydrukować na iOS-ie:\n\n1. Kliknij przycisk udostępniania (⬆️)\n2. Wybierz "Drukuj"\n3. Wybierz drukarkę i drukuj!\n\n🖨️ Miłego drukowania!');
+            } else {
+                // On other platforms, use regular print
+                window.print();
+            }
         }
         
         // Function to get the Monday of the current week
