@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐕 Dog Feeding Tracker</title>
+    <title>🐕 Harmonogram Karmienia Maczka</title>
     <style>
         @page {
             size: A4;
@@ -21,8 +21,11 @@
             background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
             min-height: 100vh;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
-        
+
         .container {
             max-width: 210mm;
             margin: 0 auto;
@@ -30,6 +33,7 @@
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             overflow: hidden;
+            width: 100%;
         }
         
         .header {
@@ -51,6 +55,11 @@
             border-radius: 10px;
             padding: 15px;
             margin: 15px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
         }
         
         .date-selector label {
@@ -140,14 +149,16 @@
         }
         
         .checkbox-row input[type="checkbox"] {
-            margin-right: 3px;
-            transform: scale(0.8);
+            margin-right: 12px;
+            transform: scale(1.8);
+            cursor: pointer;
         }
         
         .notes-section {
-            margin-top: 5px;
-            padding-top: 3px;
+            margin-top: 8px;
+            padding-top: 5px;
             border-top: 1px dashed #ddd;
+            min-height: 35px;
         }
         
         .notes-label {
@@ -160,10 +171,12 @@
             width: 100%;
             border: none;
             background: transparent;
-            font-size: 0.7em;
-            padding: 1px;
+            font-size: 0.75em;
+            padding: 3px 1px;
             outline: none;
             border-bottom: 1px dotted #ddd;
+            min-height: 20px;
+            resize: none;
         }
         
         .footer {
@@ -201,46 +214,72 @@
             gap: 5px;
         }
         
+        .print-button {
+            background: #00b894;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin: 15px 0;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .print-button:hover {
+            background: #00a085;
+        }
+
         @media print {
             body {
                 background: white;
                 padding: 0;
             }
-            
+
             .container {
                 box-shadow: none;
                 border-radius: 0;
             }
-            
+
             .date-selector {
+                display: none;
+            }
+
+            .print-button {
                 display: none;
             }
         }
     </style>
+    <script src="qrcode.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🐕 Woof! Feeding Tracker 🍖</h1>
-            <p>Keep your furry friend happy and healthy! 🐾</p>
+            <h1> 🐕 Maczek</h1>
             
             <div class="date-selector">
-                <label for="startDate">📅 Start Date:</label>
+                <label for="startDate">📅 Data początkowa:</label>
                 <input type="date" id="startDate">
-                <button onclick="generateCalendar()">🔄 Update Calendar</button>
+                <button onclick="generateCalendar()">🔄 Aktualizuj Kalendarz</button>
             </div>
         </div>
-        
+
+        <button class="print-button" onclick="window.print()">🖨️ Wydrukuj Kalendarz</button>
+
         <div class="calendar">
             <div class="legend">
                 <div class="legend-item">
-                    <span>🌅</span> Morning (7:00 AM)
+                    <span>🌅</span> Rano (7:00)
                 </div>
                 <div class="legend-item">
-                    <span>☀️</span> Afternoon (1:00 PM)
+                    <span>☀️</span> Popołudnie (13:00)
                 </div>
                 <div class="legend-item">
-                    <span>🌙</span> Evening (7:00 PM)
+                    <span>🌙</span> Wieczór (19:00)
                 </div>
             </div>
             
@@ -250,26 +289,24 @@
         </div>
         
         <div class="footer">
-            <p>🐕 Happy Dog = Happy Life! 💖</p>
-            <p style="margin: 10px 0; font-size: 0.9em;">Print this calendar and stick it on your fridge! 📋</p>
-            <div class="qr-placeholder">
-                QR Code<br>Placeholder<br>80x80px
-            </div>
+            <p style="margin: 10px 0; font-size: 0.9em;">Wydrukuj ten kalendarz i przyklej na lodówkę! 📋</p>
+            <div id="qrcode" style="display: flex; justify-content: center; margin: 20px 0;"></div>
         </div>
     </div>
 
     <script>
         const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const dayNamesShort = ['Sun 🌅', 'Mon 💼', 'Tue 🌮', 'Wed 🐪', 'Thu ⚡', 'Fri 🎉', 'Sat 😴'];
+        const dayNamesShort = ['Pon 💼', 'Wto 🌮', 'Śro 🐪', 'Czw ⚡', 'Pią 🎉', 'Sob 😴', 'Nie 🌅'];
         
         function generateCalendar() {
             const startDateInput = document.getElementById('startDate');
             const startDate = new Date(startDateInput.value || new Date());
             
-            // Ensure we start from Sunday for proper week layout
+            // Ensure we start from Monday for proper week layout
             const startDay = startDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const mondayOffset = startDay === 0 ? 6 : startDay - 1; // Convert to Monday = 0
             const calendarStartDate = new Date(startDate);
-            calendarStartDate.setDate(startDate.getDate() - startDay);
+            calendarStartDate.setDate(startDate.getDate() - mondayOffset);
             
             const calendarGrid = document.getElementById('calendarGrid');
             calendarGrid.innerHTML = '';
@@ -306,29 +343,26 @@
                         <div class="day-number">${currentDate.getDate()} ${getMonthName(currentDate.getMonth())}</div>
                         
                         <div class="meal-section">
-                            <div class="meal-time">🌅 Morning</div>
                             <div class="checkbox-row">
-                                <input type="checkbox" id="m1_${i}"> <label for="m1_${i}">Fed 🥣</label>
+                                <input type="checkbox" id="m1_${i}"> <label for="m1_${i}">🌅</label>
                             </div>
                         </div>
-                        
+
                         <div class="meal-section">
-                            <div class="meal-time">☀️ Afternoon</div>
                             <div class="checkbox-row">
-                                <input type="checkbox" id="m2_${i}"> <label for="m2_${i}">Fed 🥣</label>
+                                <input type="checkbox" id="m2_${i}"> <label for="m2_${i}">☀️</label>
                             </div>
                         </div>
-                        
+
                         <div class="meal-section">
-                            <div class="meal-time">🌙 Evening</div>
                             <div class="checkbox-row">
-                                <input type="checkbox" id="m3_${i}"> <label for="m3_${i}">Fed 🥣</label>
+                                <input type="checkbox" id="m3_${i}"> <label for="m3_${i}">🌙</label>
                             </div>
                         </div>
                         
                         <div class="notes-section">
-                            <div class="notes-label">📝 Notes:</div>
-                            <input type="text" class="notes-input" placeholder="Special treats, behavior...">
+                            <div class="notes-label">📝 Notatki:</div>
+                            <textarea class="notes-input" rows="2"></textarea>
                         </div>
                     `;
                 } else {
@@ -342,16 +376,26 @@
         }
         
         function getMonthName(monthIndex) {
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const months = ['Sty', 'Lut', 'Mar', 'Kwi', 'Maj', 'Cze',
+                           'Lip', 'Sie', 'Wrz', 'Paź', 'Lis', 'Gru'];
             return months[monthIndex];
         }
         
-        // Initialize calendar with today's date
+        // Initialize calendar with today's date and QR code
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date();
             document.getElementById('startDate').value = today.toISOString().split('T')[0];
             generateCalendar();
+            
+            // Generate QR code with current page URL
+            new QRCode(document.getElementById("qrcode"), {
+                text: window.location.href,
+                width: 80,
+                height: 80,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
         });
     </script>
 </body>
