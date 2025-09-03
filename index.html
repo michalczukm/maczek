@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐕 Dog Feeding Tracker</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff7675, #fd79a8);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .date-selector {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .date-selector label {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .date-selector input {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            margin-right: 10px;
+        }
+        
+        .date-selector button {
+            background: #00b894;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+        
+        .date-selector button:hover {
+            background: #00a085;
+        }
+        
+        .calendar {
+            padding: 20px;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-bottom: 20px;
+        }
+        
+        .day-header {
+            background: #74b9ff;
+            color: white;
+            padding: 10px 5px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .day-cell {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            min-height: 120px;
+            padding: 5px;
+            position: relative;
+        }
+        
+        .day-cell.today {
+            background: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        
+        .day-number {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #2d3436;
+            margin-bottom: 5px;
+        }
+        
+        .meal-section {
+            margin: 2px 0;
+            font-size: 0.75em;
+        }
+        
+        .meal-time {
+            font-weight: bold;
+            color: #e17055;
+            margin-bottom: 1px;
+        }
+        
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            margin: 1px 0;
+        }
+        
+        .checkbox-row input[type="checkbox"] {
+            margin-right: 3px;
+            transform: scale(0.8);
+        }
+        
+        .notes-section {
+            margin-top: 5px;
+            padding-top: 3px;
+            border-top: 1px dashed #ddd;
+        }
+        
+        .notes-label {
+            font-size: 0.7em;
+            color: #636e72;
+            font-weight: bold;
+        }
+        
+        .notes-input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 0.7em;
+            padding: 1px;
+            outline: none;
+            border-bottom: 1px dotted #ddd;
+        }
+        
+        .footer {
+            background: #ddd;
+            padding: 20px;
+            text-align: center;
+            border-top: 3px dashed #bbb;
+        }
+        
+        .qr-placeholder {
+            width: 80px;
+            height: 80px;
+            background: #f1f2f6;
+            border: 2px dashed #57606f;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            color: #57606f;
+            border-radius: 5px;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+            font-size: 0.9em;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            
+            .date-selector {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐕 Woof! Feeding Tracker 🍖</h1>
+            <p>Keep your furry friend happy and healthy! 🐾</p>
+            
+            <div class="date-selector">
+                <label for="startDate">📅 Start Date:</label>
+                <input type="date" id="startDate">
+                <button onclick="generateCalendar()">🔄 Update Calendar</button>
+            </div>
+        </div>
+        
+        <div class="calendar">
+            <div class="legend">
+                <div class="legend-item">
+                    <span>🌅</span> Morning (7:00 AM)
+                </div>
+                <div class="legend-item">
+                    <span>☀️</span> Afternoon (1:00 PM)
+                </div>
+                <div class="legend-item">
+                    <span>🌙</span> Evening (7:00 PM)
+                </div>
+            </div>
+            
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- Calendar will be generated here -->
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>🐕 Happy Dog = Happy Life! 💖</p>
+            <p style="margin: 10px 0; font-size: 0.9em;">Print this calendar and stick it on your fridge! 📋</p>
+            <div class="qr-placeholder">
+                QR Code<br>Placeholder<br>80x80px
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const dayNamesShort = ['Sun 🌅', 'Mon 💼', 'Tue 🌮', 'Wed 🐪', 'Thu ⚡', 'Fri 🎉', 'Sat 😴'];
+        
+        function generateCalendar() {
+            const startDateInput = document.getElementById('startDate');
+            const startDate = new Date(startDateInput.value || new Date());
+            
+            // Ensure we start from Sunday for proper week layout
+            const startDay = startDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const calendarStartDate = new Date(startDate);
+            calendarStartDate.setDate(startDate.getDate() - startDay);
+            
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '';
+            
+            // Add day headers
+            dayNamesShort.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'day-header';
+                dayHeader.textContent = day;
+                calendarGrid.appendChild(dayHeader);
+            });
+            
+            // Generate 14 days (2 weeks) starting from the adjusted start date
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            for (let i = 0; i < 14; i++) {
+                const currentDate = new Date(calendarStartDate);
+                currentDate.setDate(calendarStartDate.getDate() + i);
+                
+                const dayCell = document.createElement('div');
+                dayCell.className = 'day-cell';
+                
+                // Highlight today
+                const cellDate = new Date(currentDate);
+                cellDate.setHours(0, 0, 0, 0);
+                if (cellDate.getTime() === today.getTime()) {
+                    dayCell.classList.add('today');
+                }
+                
+                // Only show dates within the selected 2-week period
+                if (currentDate >= startDate && currentDate < new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000)) {
+                    dayCell.innerHTML = `
+                        <div class="day-number">${currentDate.getDate()} ${getMonthName(currentDate.getMonth())}</div>
+                        
+                        <div class="meal-section">
+                            <div class="meal-time">🌅 Morning</div>
+                            <div class="checkbox-row">
+                                <input type="checkbox" id="m1_${i}"> <label for="m1_${i}">Fed 🥣</label>
+                            </div>
+                        </div>
+                        
+                        <div class="meal-section">
+                            <div class="meal-time">☀️ Afternoon</div>
+                            <div class="checkbox-row">
+                                <input type="checkbox" id="m2_${i}"> <label for="m2_${i}">Fed 🥣</label>
+                            </div>
+                        </div>
+                        
+                        <div class="meal-section">
+                            <div class="meal-time">🌙 Evening</div>
+                            <div class="checkbox-row">
+                                <input type="checkbox" id="m3_${i}"> <label for="m3_${i}">Fed 🥣</label>
+                            </div>
+                        </div>
+                        
+                        <div class="notes-section">
+                            <div class="notes-label">📝 Notes:</div>
+                            <input type="text" class="notes-input" placeholder="Special treats, behavior...">
+                        </div>
+                    `;
+                } else {
+                    // Empty cells for days outside the 2-week period
+                    dayCell.style.background = '#f1f2f6';
+                    dayCell.style.opacity = '0.3';
+                }
+                
+                calendarGrid.appendChild(dayCell);
+            }
+        }
+        
+        function getMonthName(monthIndex) {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return months[monthIndex];
+        }
+        
+        // Initialize calendar with today's date
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            document.getElementById('startDate').value = today.toISOString().split('T')[0];
+            generateCalendar();
+        });
+    </script>
+</body>
+</html>
