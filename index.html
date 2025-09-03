@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🐕 Harmonogram Karmienia Maczka</title>
     <style>
         @page {
@@ -74,22 +74,17 @@
             border-radius: 5px;
             font-size: 1em;
             margin-right: 10px;
+            -webkit-appearance: none;
+            -webkit-text-size-adjust: 100%;
+            -webkit-user-select: text;
+        }
+
+        .date-selector input:focus {
+            outline: 2px solid #00b894;
+            outline-offset: 2px;
         }
         
-        .date-selector button {
-            background: #00b894;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background 0.3s;
-        }
-        
-        .date-selector button:hover {
-            background: #00a085;
-        }
+
         
         .calendar {
             padding: 20px;
@@ -264,7 +259,6 @@
             <div class="date-selector">
                 <label for="startDate">📅 Data początkowa:</label>
                 <input type="date" id="startDate">
-                <button onclick="generateCalendar()">🔄 Aktualizuj Kalendarz</button>
             </div>
         </div>
 
@@ -381,12 +375,28 @@
             return months[monthIndex];
         }
         
-        // Initialize calendar with today's date and QR code
-        document.addEventListener('DOMContentLoaded', function() {
+        // Function to get the Monday of the current week
+        function getMondayOfCurrentWeek() {
             const today = new Date();
-            document.getElementById('startDate').value = today.toISOString().split('T')[0];
+            const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Calculate days to subtract to get to Monday
+            const monday = new Date(today);
+            monday.setDate(today.getDate() + mondayOffset);
+            return monday;
+        }
+
+        // Initialize calendar with Monday of current week and QR code
+        document.addEventListener('DOMContentLoaded', function() {
+            const mondayOfWeek = getMondayOfCurrentWeek();
+            const dateInput = document.getElementById('startDate');
+            dateInput.value = mondayOfWeek.toISOString().split('T')[0];
             generateCalendar();
-            
+
+            // Add event listener for automatic calendar updates
+            dateInput.addEventListener('change', function() {
+                generateCalendar();
+            });
+
             // Generate QR code with current page URL
             new QRCode(document.getElementById("qrcode"), {
                 text: window.location.href,
