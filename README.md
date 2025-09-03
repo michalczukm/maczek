@@ -5,3 +5,7 @@ A beautifully designed, printable dog feeding calendar that helps me track Macze
 The calendar can be printed on A4 paper and stuck on the fridge for easy reference. The QR code links to its URL - so you can easily access it from your phone when printed.
 
 This project was fully vibecoded.
+
+## Deployment
+
+`deployctl deploy --prod --project=maczek jsr:@std/http/file-server`
